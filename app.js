@@ -5,6 +5,8 @@ const json = require('koa-json')
 const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
+const session = require('koa-generic-session')
+const flash = require('koa-connect-flash')
 
 const index = require('./routes/index')
 
@@ -19,7 +21,12 @@ app.use(json())
 app.use(logger())
 app.use(require('koa-static')(__dirname + '/public'))
 
-app.use(views(__dirname + '/views/pages', {
+//flash
+app.keys = ['keys'];
+app.use(session());
+app.use(flash());
+
+app.use(views(__dirname + '/views', {
   extension: 'pug'
 }))
 

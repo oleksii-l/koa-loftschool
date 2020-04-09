@@ -9,17 +9,30 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "@sendgrid/mail": "^7.0.0",
+    "cookie-parser": "~1.4.4",
     "debug": "^4.1.1",
+    "dotenv": "^8.2.0",
+    "formidable": "^1.2.2",
+    "joi": "^14.3.1",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
+    "koa-connect-flash": "^0.1.2",
     "koa-convert": "^1.2.0",
+    "koa-generic-session": "^2.0.4",
     "koa-json": "^2.0.2",
     "koa-logger": "^3.2.0",
     "koa-onerror": "^4.1.0",
     "koa-router": "^7.4.0",
     "koa-static": "^5.0.0",
     "koa-views": "^6.2.0",
-    "pug": "^2.0.3"
+    "lowdb": "^1.0.0",
+    "morgan": "~1.9.1",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "pug": "^2.0.3",
+    "session-file-store": "^1.4.0"
   },
   "devDependencies": {
     "nodemon": "^1.19.1"
