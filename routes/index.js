@@ -1,26 +1,34 @@
 const router = require('koa-router')()
+const koaBody = require('koa-body')
 const controllers = require('../controllers')
+const validation = require('../utils/validation')
 
 
 router.get('/', controllers.index)
 router.get('/login', controllers.login)
-router.get('/admin', controllers.admin)
+router.get('/admin', validation.isValidAuth, controllers.admin)
 
 
-// router.get('/', async (ctx, next) => {
-//   await ctx.render('index', {
-//     title: 'Hello Koa 2!'
-//   })
-// })
+router.post(
+  '/admin/upload',
+  koaBody({
+    multipart: true,
+    formidable: {
+      uploadDir: process.cwd() + '/public/images/products',
+    },
+  }),
+  validation.isValidFile,
+  validation.isValidDescFile,
+  controllers.upload,
+)
 
-// router.get('/string', async (ctx, next) => {
-//   ctx.body = 'koa2 string'
-// })
+router.post('/login', koaBody(), validation.isValidAuth, controllers.auth)
 
-// router.get('/json', async (ctx, next) => {
-//   ctx.body = {
-//     title: 'koa2 json'
-//   }
-// })
+router.post(
+  '/',
+  koaBody(),
+  validation.isValidEmail,
+  controllers.email,
+)
 
 module.exports = router

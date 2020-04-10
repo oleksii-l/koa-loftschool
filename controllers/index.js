@@ -1,5 +1,8 @@
 const db = require("../db");
 const path = require("path");
+const fs = require('fs')
+const util = require('util')
+const rename = util.promisify(fs.rename)
 const sgMail = require("@sendgrid/mail");
 const utils = require("../utils");
 require("dotenv").config({ path: __dirname + "/.env" });
@@ -19,58 +22,40 @@ module.exports.login = async (ctx) => {
   await ctx.render("pages/login", { msglogin: ctx.flash("message") });
 }
 
-
-module.exports.myWorks = async (ctx) => {
-  const works = db.getWorks() || []
-  await ctx.render('pages/my-work', {
-    items: works,
-    authorized: ctx.session.isAuth,
-  })
-}
 module.exports.upload = async (ctx) => {
-  const { name, path: filePath } = ctx.request.files.file
+  const { fileName, path: filePath } = ctx.request.files.photo
 
-  const { projectName, projectUrl, text } = ctx.request.body
+  const { name, price } = ctx.request.body
   console.log(__dirname)
   console.log(process.cwd())
-  let fileName = path.join(process.cwd(), 'public', 'upload', name)
-  const errUpload = await rename(filePath, fileName)
+  let destFile = path.join(process.cwd(), 'public', 'images', 'products', name)
+  const errUpload = await rename(filePath, destFile)
   if (errUpload) {
     return (ctx.body = {
       mes: 'Something went wrong try again...',
       status: 'Error',
     })
   }
-  db.saveWork({
-    name: projectName,
-    link: projectUrl,
-    desc: text,
-    picture: path.join('upload', name),
-  })
+  utils.saveProduct({ name, price, file: ctx.request.files.photo.name });
 
-  ctx.body = {
-    mes: 'Picture success upload!',
-    status: 'OK',
-  }
+  ctx.redirect('/admin')
 }
 
 
 module.exports.auth = async (ctx) => {
-  const { login, password } = ctx.request.body
-  const user = db.getUser()
-  if (user.login === login && psw.validPassword(password)) {
-    ctx.session.isAuth = true
-    ctx.body = {
-      mes: 'Done',
-      status: 'OK',
+  return passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
     }
-  } else {
-    ctx.status = 403
-    ctx.body = {
-      mes: 'Forbiden',
-      status: 'Error',
+    if (!user) {
+      ctx.flash("message", "Укажите правильный email и пароль");
+      ctx.redirect("/login");
     }
-  }
+    ctx.login(user, err => {
+      ctx.redirect("/admin"); //auth successfully passed
+    });
+  })(ctx);  
+
 }
 
 module.exports.email = async (ctx) => {
