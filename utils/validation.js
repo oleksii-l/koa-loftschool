@@ -5,14 +5,8 @@ const unlink = util.promisify(fs.unlink)
 
 module.exports.isValidFile = async (ctx, next) => {
   const schema = Joi.object().keys({
-    name: Joi.string()
-      .min(1)
-      .max(300)
-      .required(),
-    size: Joi.number()
-      .integer()
-      .min(1)
-      .required(),
+    name: Joi.string().min(1).max(300).required(),
+    size: Joi.number().integer().min(1).required(),
   })
 
   const { name, size } = ctx.request.files.photo
@@ -35,12 +29,8 @@ module.exports.isValidFile = async (ctx, next) => {
 
 module.exports.isValidDescFile = async (ctx, next) => {
   const schema = Joi.object({
-    name: Joi.string()
-      .min(1)
-      .max(30)
-      .required(),
-    price: Joi.number()
-      .required(),
+    name: Joi.string().min(1).max(30).required(),
+    price: Joi.number().required(),
   })
 
   const { error } = Joi.validate(ctx.request.body, schema)
@@ -62,15 +52,9 @@ module.exports.isValidDescFile = async (ctx, next) => {
 
 module.exports.isValidEmail = (ctx, next) => {
   const schema = Joi.object().keys({
-    name: Joi.string()
-      .max(100)
-      .required(),
-    email: Joi.string()
-      .email()
-      .required(),
-    message: Joi.string()
-      .max(1200)
-      .required(),
+    name: Joi.string().max(100).required(),
+    email: Joi.string().email().required(),
+    message: Joi.string().max(1200).required(),
   })
   const { error } = Joi.validate(ctx.request.body, schema)
   if (error) {
@@ -82,10 +66,11 @@ module.exports.isValidEmail = (ctx, next) => {
       status: 'Error',
     })
   }
-  next()
+  return next()
 }
 
 module.exports.isValidAuth = (ctx, next) => {
+  console.log('Validation')
   const schema = Joi.object().keys({
     email: Joi.string().required(),
     password: Joi.string().required(),
@@ -93,7 +78,7 @@ module.exports.isValidAuth = (ctx, next) => {
   const { error } = Joi.validate(ctx.request.body, schema)
   if (error) {
     const message = error.details.map((el) => el.message).join('; ')
-
+    console.log(message)
     ctx.status = 400
     return (ctx.body = {
       mes: message,
@@ -101,11 +86,11 @@ module.exports.isValidAuth = (ctx, next) => {
     })
   }
   console.log('Next auth')
-  next()
+  return next()
 }
 
-module.exports.isValidAuth = (ctx, next) => {
-  if(ctx.isAuthenticated()){
-    next()
+module.exports.isAdmin = (ctx, next) => {
+  if (ctx.isAuthenticated()) {
+    return next()
   }
 }

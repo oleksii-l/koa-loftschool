@@ -1,13 +1,15 @@
-const router = require('koa-router')()
+const router = new require('koa-router')()
 const koaBody = require('koa-body')
 const controllers = require('../controllers')
 const validation = require('../utils/validation')
 
-
 router.get('/', controllers.index)
-router.get('/login', controllers.login)
-router.get('/admin', validation.isValidAuth, controllers.admin)
+router.post('/', koaBody(), validation.isValidEmail, controllers.email)
 
+router.get('/login', controllers.login)
+router.post('/login', validation.isValidAuth, controllers.auth)
+
+router.get('/admin', validation.isAdmin, controllers.admin)
 
 router.post(
   '/admin/upload',
@@ -17,18 +19,10 @@ router.post(
       uploadDir: process.cwd() + '/public/images/products',
     },
   }),
+  validation.isAdmin,
   validation.isValidFile,
   validation.isValidDescFile,
   controllers.upload,
-)
-
-router.post('/login', koaBody(), validation.isValidAuth, controllers.auth)
-
-router.post(
-  '/',
-  koaBody(),
-  validation.isValidEmail,
-  controllers.email,
 )
 
 module.exports = router

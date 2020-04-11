@@ -1,17 +1,22 @@
-const db = require("../db");
-const path = require("path");
+const db = require('../db')
+const path = require('path')
 const fs = require('fs')
 const util = require('util')
 const rename = util.promisify(fs.rename)
-const sgMail = require("@sendgrid/mail");
-const utils = require("../utils");
-require("dotenv").config({ path: __dirname + "/.env" });
+const sgMail = require('@sendgrid/mail')
+const utils = require('../utils')
+require('dotenv').config({ path: __dirname + '/.env' })
+const passport = require('../passport')
 
 module.exports.index = async (ctx) => {
-  const skills = utils.getAllSkills();
-  const products = utils.getAllProducts();
+  const skills = utils.getAllSkills()
+  const products = utils.getAllProducts()
 
-  await ctx.render("pages/index", { skills, products, msgemail: ctx.flash("emailMessage") });
+  await ctx.render('pages/index', {
+    skills,
+    products,
+    msgemail: ctx.flash('emailMessage'),
+  })
 }
 
 module.exports.admin = async (ctx) => {
@@ -19,7 +24,7 @@ module.exports.admin = async (ctx) => {
 }
 
 module.exports.login = async (ctx) => {
-  await ctx.render("pages/login", { msglogin: ctx.flash("message") });
+  await ctx.render('pages/login', { msglogin: ctx.flash('message') })
 }
 
 module.exports.upload = async (ctx) => {
@@ -36,29 +41,31 @@ module.exports.upload = async (ctx) => {
       status: 'Error',
     })
   }
-  utils.saveProduct({ name, price, file: ctx.request.files.photo.name });
+  utils.saveProduct({ name, price, file: ctx.request.files.photo.name })
 
   ctx.redirect('/admin')
 }
 
-
 module.exports.auth = async (ctx) => {
-  return passport.authenticate("local", (err, user, info) => {
+  console.log('In: controller')
+  return await passport.authenticate('local', async (err, user) => {
+    console.log('In passport', user)
     if (err) {
-      return next(err);
+      ctx.body = err
     }
     if (!user) {
-      ctx.flash("message", "Укажите правильный email и пароль");
-      ctx.redirect("/login");
+      ctx.flash('message', 'Укажите правильный email и пароль')
+      await ctx.redirect('/login')
+    } else {
+      ctx.login(user, async (err) => {
+        await ctx.redirect('/admin') //auth successfully passed
+      })
     }
-    ctx.login(user, err => {
-      ctx.redirect("/admin"); //auth successfully passed
-    });
-  })(ctx);  
-
+  })(ctx)
 }
 
 module.exports.email = async (ctx) => {
+  console.log('Email')
   const { name, email, message } = ctx.request.body
   try {
     console.log(process.env.SEND_GRID_API_KEY)
