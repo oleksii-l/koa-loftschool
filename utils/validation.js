@@ -59,12 +59,29 @@ module.exports.isValidEmail = (ctx, next) => {
   const { error } = Joi.validate(ctx.request.body, schema)
   if (error) {
     const message = error.details.map((el) => el.message).join('; ')
+    console.log(message)
+    ctx.flash("emailMessage", message);
+    ctx.redirect('#sendemail');
+  }
+  return next()
+}
 
-    ctx.status = 400
-    return (ctx.body = {
-      mes: message,
-      status: 'Error',
-    })
+module.exports.isValidSkills = (ctx, next) => {
+  const schema = Joi.object({
+    age: Joi.number()
+      .min(15)
+      .max(100)
+      .required(),
+    concerts: Joi.number().required(),
+    cities: Joi.number().required(),
+    years: Joi.number().required()
+  });
+
+  const { error } = Joi.validate(req.body, schema);
+  if (error) {
+    const message = error.details.map((el) => el.message).join('; ')
+    ctx.flash("skillsMessage", message);
+    ctx.redirect("/admin");
   }
   return next()
 }
@@ -79,11 +96,8 @@ module.exports.isValidAuth = (ctx, next) => {
   if (error) {
     const message = error.details.map((el) => el.message).join('; ')
     console.log(message)
-    ctx.status = 400
-    return (ctx.body = {
-      mes: message,
-      status: 'Error',
-    })
+    ctx.flash("message", "Укажите правильный email и пароль");
+    ctx.redirect('/login')
   }
   console.log('Next auth')
   return next()

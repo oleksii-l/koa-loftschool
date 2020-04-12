@@ -28,12 +28,12 @@ module.exports.login = async (ctx) => {
 }
 
 module.exports.upload = async (ctx) => {
-  const { fileName, path: filePath } = ctx.request.files.photo
+  const { name: fileName, path: filePath } = ctx.request.files.photo
 
   const { name, price } = ctx.request.body
   console.log(__dirname)
   console.log(process.cwd())
-  let destFile = path.join(process.cwd(), 'public', 'images', 'products', name)
+  let destFile = path.join(process.cwd(), 'public', 'images', 'products', fileName)
   const errUpload = await rename(filePath, destFile)
   if (errUpload) {
     return (ctx.body = {
@@ -64,6 +64,11 @@ module.exports.auth = async (ctx) => {
   })(ctx)
 }
 
+module.exports.skills = async (ctx) => {
+  adminCtrl.saveSkills(req.body);
+  ctx.redirect("/");
+}
+
 module.exports.email = async (ctx) => {
   console.log('Email')
   const { name, email, message } = ctx.request.body
@@ -71,20 +76,15 @@ module.exports.email = async (ctx) => {
     console.log(process.env.SEND_GRID_API_KEY)
     sgMail.setApiKey(process.env.SEND_GRID_API_KEY)
     const msg = {
-      to: 'krabat@ex.ua',
+      to: 'simple2001@ukr.net',
       from: email,
       subject: `Sending email from ${name}`,
       text: message,
     }
     sgMail.send(msg)
   } catch (err) {
-    return (ctx.body = {
-      mes: err.message,
-      status: 'Error',
-    })
+    ctx.flash("emailMessage", message);
+    ctx.redirect('#sendemail')
   }
-  ctx.body = {
-    mes: 'Done',
-    status: 'OK',
-  }
+  ctx.redirect('/')
 }
